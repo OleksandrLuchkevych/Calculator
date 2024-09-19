@@ -1,4 +1,4 @@
-from functions import calculator, show_history
+from functions import calculator, show_history, log_history
 
 memory_value = 0
 decimal_places = 1
@@ -13,7 +13,6 @@ def set_decimal_places():
         except ValueError:
             print("Incorrect input! Enter an integer.")
 
-
 def main():
     global memory_value, decimal_places
 
@@ -26,7 +25,7 @@ def main():
         choice = input("Choose option (1-4): ")
 
         if choice == '1':
-            result = calculator(decimal_places)
+            result, first_number, operator, second_number = calculator(decimal_places)
             
             if result is not None:
                 choice_memory = input('Would you like to store result in memory (MS), add to memory (M+), clear memory (MC), or skip? ').upper()
@@ -34,6 +33,10 @@ def main():
                     case 'MS':
                         memory_value = result
                         print(f"Stored {result} in memory.")
+                        
+                        log_history(first_number, operator, second_number, result)
+                        print(f"Result: {result}")
+                
                     case 'M+':
                         memory_value += result
                         print(f"Added {result} to memory. New memory value: {memory_value}.")
