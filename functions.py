@@ -1,53 +1,67 @@
-import math
+from app_settings import get_number, get_operator, get_decimal_places
+from operations import addition, subtraction, multiplication, division, power, square_root, modulus
+import memory as mh
 
-def log_history(first_operand, operator, second_operand, result):
-    with open('./source/history_log.txt', 'a') as file:
-        file.write(f"{first_operand} {operator} {second_operand} = {result}\n")
+class Calculator:
+    def __init__(self):
+        self.first_number = 0
+        self.second_number = 0
+        self.operator = ''
+        self.result = None
 
-def show_history():
-    try:
-        with open('./source/history_log.txt', 'r') as file:
-            return file.read()
-    except FileNotFoundError:
-        return "History is empty."
-
-def input_number(prompt):
-    while True:
-        try:
-            return float(input(prompt))
-        except ValueError:
-            print("Incorrect input! Please enter a number.")
-
-def calculator(decimal_places):
-    first_number = input_number("Enter the first number: ")
-    operator = input("Enter the operator (+, -, *, /, ^, sq, %): ")
-    
-    while operator not in ['+', '-', '*', '/', '^', 'sq', '%']:
-        print("Invalid operator. Available operators: +, -, *, /, ^, sq, %.")
-        operator = input("Enter operator (+, -, *, /, ^, sq, %): ")
-
-    second_number = input_number("Enter the second number: ")
-    result = None  # Initialize result
-
-    if operator == '+':
-        result = round(first_number + second_number, decimal_places)
-    elif operator == '-':
-        result = round(first_number - second_number, decimal_places)
-    elif operator == '*':
-        result = round(first_number * second_number, decimal_places)
-    elif operator == '/':
-        if second_number != 0:
-            result = round(first_number / second_number, decimal_places)
+    def get_input(self):
+        user_input = input("Enter the first number (or 'MR' to use memory): ").strip().upper()
+        
+        if user_input == 'MR':
+            self.first_number = mh.recall_memory()
+            print(f"Recalled from memory: {self.first_number}")
         else:
-            print("Error: division by zero!")
-    elif operator == '^':
-        result = round(first_number ** second_number, decimal_places)
-    elif operator == 'sq':
-        result = round(first_number ** (1 / second_number), decimal_places)
-    elif operator == '%':
-        if second_number != 0:
-            result = round(first_number % second_number, decimal_places)
+            try:
+                self.first_number = float(user_input)
+            except ValueError:
+                print("Invalid input! Please enter a valid number.")
+                self.first_number = get_number("Enter a valid first number: ")
+
+        self.operator = get_operator("Enter the operator (+, -, *, /, ^, sq, %): ")
+        
+        user_input = input("Enter the second number (or 'MR' to use memory): ").strip().upper()
+        
+        if user_input == 'MR':
+            self.second_number = mh.recall_memory()
+            print(f"Recalled from memory: {self.second_number}")
         else:
-            print("Error: division by zero!")
-    print(first_number, operator, second_number, "=", result)
-    return result, first_number, operator, second_number  # Return result and operands
+            try:
+                self.second_number = float(user_input)
+            except ValueError:
+                print("Invalid input! Please enter a valid number.")
+                self.second_number = get_number("Enter a valid second number: ")
+
+    def perform_operation(self):
+        match self.operator:
+            case '+':
+                self.result = addition(self.first_number, self.second_number)
+            case '-':
+                self.result = subtraction(self.first_number, self.second_number)
+            case '*':
+                self.result = multiplication(self.first_number, self.second_number)
+            case '/':
+                self.result = division(self.first_number, self.second_number)
+            case '^':
+                self.result = power(self.first_number, self.second_number)
+            case 'sq':
+                self.result = square_root(self.first_number, self.second_number)
+            case '%':
+                self.result = modulus(self.first_number, self.second_number)
+
+        formatted_result = f"{self.result:.{get_decimal_places()}f}"
+        mh.log_history(self.first_number, self.operator, self.second_number, formatted_result)
+
+    def display_result(self):
+        if self.result is not None:
+            formatted_result = f"{self.result:.{get_decimal_places()}f}"
+            if self.operator == 'sq':
+                print(f"The square root of {self.first_number} is {formatted_result}")
+            else:
+                print(f"{self.first_number} {self.operator} {self.second_number} = {formatted_result}")
+        else:
+            print("No result to display.")
